@@ -20,9 +20,13 @@
 
 - schema 定义和 schema 所有权必须保留在代码中。字段 metadata 使用 Zod schema 的 `.meta(...)`。
 - 除非用户明确要求，不要给 dev server 增加可视化 schema 编辑器。
-- 维护期代码可以读写 JSON、CSV 和 SQLite 源存储。
+- schema 和源数据的定义、校验、读写、导入、导出、upsert、delete 等数据管理能力必须收敛在 `packages/core`。
+- `packages/core` 必须提供统一的数据管理 API 端口，用户只安装并 import `@whispering233/static-web-data` 时，也应能通过 core API 管理 schema 和源数据。
+- 维护期代码可以通过 core 的统一 API 读写 JSON、CSV 和 SQLite 源存储。
+- JSON、CSV 和 `better-sqlite3` SQLite 文件存储实现归属 `packages/core`。不要在 `packages/dev` 中重新定义一套数据管理 API 或重复实现同类 storage adapter。
 - 浏览器运行时代码只能读取导出的静态 JSON 数据包。
-- `better-sqlite3` 必须隔离在 `packages/dev` 中；不要把 native SQLite 依赖引入 `packages/core` 或 `packages/react`。
+- `better-sqlite3` 是 core 的维护期 Node.js 存储依赖；不要把 native SQLite 依赖引入 `packages/react`，也不要让浏览器运行时路径加载它。
+- `packages/dev` 只负责外围开发体验，例如 CLI、config loading、dev server、HTTP API 编排和本地维护 UI。dev 必须复用 core 的数据管理 API。
 - UI 样式必须与 schema/storage 逻辑解耦。React 组件应放在 `packages/react`。
 - `packages/core` 是依赖根。`packages/dev` 和 `packages/react` 可以依赖 core；core 不能依赖 dev 或 React。
 
@@ -129,7 +133,7 @@ git status --short --branch
 - 如果缺失 `better-sqlite3` native binding，运行：
 
 ```sh
-pnpm --filter @whispering233/static-web-data-dev rebuild better-sqlite3
+pnpm --filter @whispering233/static-web-data rebuild better-sqlite3
 ```
 
 - 如果 package tarball 包含异常文件，先重新构建再检查：
