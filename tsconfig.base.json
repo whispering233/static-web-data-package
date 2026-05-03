@@ -1,12 +1,18 @@
 {
   "compilerOptions": {
     "target": "ES2022",
-    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "lib": [
+      "ES2022",
+      "DOM",
+      "DOM.Iterable"
+    ],
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
     "strict": true,
     "ignoreDeprecations": "6.0",
-    "types": ["node"],
+    "types": [
+      "node"
+    ],
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
@@ -16,6 +22,24 @@
     "skipLibCheck": true,
     "isolatedModules": true,
     "noUncheckedIndexedAccess": true,
-    "exactOptionalPropertyTypes": true
+    "exactOptionalPropertyTypes": true,
+    "baseUrl": ".",
+    "paths": {
+      "@whispering233/static-web-data": [
+        "packages/core/src/index.ts"
+      ],
+      "@whispering233/static-web-data/schema": [
+        "packages/core/src/schema.ts"
+      ],
+      "@whispering233/static-web-data/export": [
+        "packages/core/src/export.ts"
+      ],
+      "@whispering233/static-web-data-react": [
+        "packages/react/src/index.tsx"
+      ],
+      "@whispering233/static-web-data-dev": [
+        "packages/dev/src/index.ts"
+      ]
+    }
   }
 }
