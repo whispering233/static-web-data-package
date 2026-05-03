@@ -27,6 +27,7 @@
 - 浏览器运行时代码只能读取导出的静态 JSON 数据包。
 - `better-sqlite3` 是 core 的维护期 Node.js 存储依赖；不要把 native SQLite 依赖引入 `packages/react`，也不要让浏览器运行时路径加载它。
 - `packages/dev` 只负责外围开发体验，例如 CLI、config loading、dev server、HTTP API 编排和本地维护 UI。dev 必须复用 core 的数据管理 API。
+- `packages/dev` 内嵌的 React 数据管理 UI 由 `swd dev` 托管在本地 dev server 根路径 `/`；不要把它拆成独立的运行期 React 包，也不要让它绕过 core storage API。
 - UI 样式必须与 schema/storage 逻辑解耦。React 组件应放在 `packages/react`。
 - `packages/core` 是依赖根。`packages/dev` 和 `packages/react` 可以依赖 core；core 不能依赖 dev 或 React。
 
@@ -66,9 +67,12 @@ pnpm run ci
 
 ```sh
 pnpm build
-node packages/dev/dist/cli.js validate --cwd npm-test --config swd.config.ts
-node packages/dev/dist/cli.js export --cwd npm-test --config swd.config.ts
+node packages/dev/dist/cli.js --cwd npm-test --config swd.config.ts validate
+node packages/dev/dist/cli.js --cwd npm-test --config swd.config.ts export
+node packages/dev/dist/cli.js --cwd npm-test --config swd.config.ts dev --port 4321
 ```
+
+`swd dev` 默认绑定 `127.0.0.1`，内嵌 React 管理页访问地址为 `http://127.0.0.1:<port>/`。
 
 VS Code 调试说明位于 `docs/vscode-debugging.md`。
 
@@ -115,6 +119,7 @@ GitHub Pages 部署由 `.github/workflows/api-docs.yml` 负责。仓库 Pages so
 
 - 不要还原用户改动，除非用户明确要求。
 - 不要把无关重构放进功能提交。
+- `.worktrees/` 是项目内隐藏 worktree 目录，必须保持 ignored。创建临时 worktree 时优先放在该目录下；清理时先用 `git worktree remove` 解除登记，再确认残留路径仍位于 `.worktrees/` 内后再递归删除。
 - 提交前检查：
 
 ```sh

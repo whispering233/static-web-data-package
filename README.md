@@ -98,22 +98,40 @@ pnpm build
 校验内置测试项目：
 
 ```sh
-node packages/dev/dist/cli.js validate --cwd npm-test --config swd.config.ts
+node packages/dev/dist/cli.js --cwd npm-test --config swd.config.ts validate
 ```
 
 导出运行时 JSON：
 
 ```sh
-node packages/dev/dist/cli.js export --cwd npm-test --config swd.config.ts
+node packages/dev/dist/cli.js --cwd npm-test --config swd.config.ts export
 ```
 
 启动维护端 dev server：
 
 ```sh
-node packages/dev/dist/cli.js dev --cwd npm-test --config swd.config.ts --port 4321
+node packages/dev/dist/cli.js --cwd npm-test --config swd.config.ts dev --port 4321
 ```
 
-`swd dev` 会启动本地 dev server，并提供内嵌 React 数据管理 UI。UI 通过 dev server 调用 core storage API，不在 dev 包中重新实现源数据读写逻辑。
+`swd dev` 会启动本地 dev server，并在根路径 `/` 提供内嵌 React 数据管理 UI。默认绑定地址是 `127.0.0.1:4321`，浏览器访问：
+
+```text
+http://127.0.0.1:4321/
+```
+
+可以通过 `--host` 和 `--port` 指定监听地址：
+
+```sh
+node packages/dev/dist/cli.js --cwd npm-test --config swd.config.ts dev --host 127.0.0.1 --port 4567
+```
+
+对应访问地址：
+
+```text
+http://127.0.0.1:4567/
+```
+
+UI 通过同源的 `/api/*` 端点调用 core storage API，不在 dev 包中重新实现源数据读写逻辑。默认只绑定 loopback 地址，用于降低本地维护 API 被局域网或跨站请求误用的风险。
 
 在安装了 dev 包的消费项目中，可以直接使用包提供的 binary：
 
