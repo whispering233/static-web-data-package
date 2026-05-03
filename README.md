@@ -1,42 +1,42 @@
 # Static Web Data
 
-TypeScript-first data package framework for static websites.
+面向静态网站的 TypeScript 优先数据包框架。
 
-This repository contains a pnpm workspace that lets developers define data schemas in code, maintain local source data with a dev server, and export a read-only static JSON bundle for browser runtime use.
+这个仓库是一个 pnpm workspace，用于让开发者用代码定义数据 schema，通过本地维护端管理源数据，并为浏览器运行时导出只读静态 JSON 数据包。
 
-## Packages
+## 包结构
 
-| Package | Purpose |
+| 包名 | 用途 |
 | --- | --- |
-| `@whispering233/static-web-data` | Core schema helpers, validation helpers, static bundle exporter, and read-only runtime client. |
-| `@whispering233/static-web-data-dev` | Local CLI, maintenance dev server, and JSON/CSV/SQLite storage adapters. |
-| `@whispering233/static-web-data-react` | Optional React hooks, base components, and CSS template styles. |
+| `@whispering233/static-web-data` | 核心 schema helper、校验 helper、静态数据包导出器、只读运行时 client。 |
+| `@whispering233/static-web-data-dev` | 本地 CLI、维护端 dev server、JSON/CSV/SQLite 存储适配器。 |
+| `@whispering233/static-web-data-react` | 可选 React hooks、基础组件和 CSS 模板样式。 |
 
-The workspace also includes `npm-test`, a private Vite React test app used to validate packed npm tarballs. It is not included in published packages.
+仓库还包含 `npm-test`，这是一个私有 Vite React 测试应用，用于验证打包后的 npm tarball。它不会被包含进任何发布包。
 
-## Design
+## 设计说明
 
-Static Web Data separates two phases:
+Static Web Data 将数据生命周期分为两个阶段：
 
-- Maintenance time: developers edit source data through local JSON, CSV, or SQLite storage. The dev package validates records against code-defined Zod schemas and can run a local maintenance server.
-- Runtime: static websites read generated JSON files only. Browser runtime does not read CSV or SQLite directly.
+- 维护期：开发者通过本地 JSON、CSV 或 SQLite 源存储编辑数据。dev 包会用代码定义的 Zod schema 校验记录，也可以启动本地维护端。
+- 运行期：静态网站只读取导出的 JSON 文件。浏览器运行时不会直接读取 CSV 或 SQLite。
 
-Schema ownership stays in code. The dev server does not edit schemas; it reads Zod schema metadata to describe fields and validate records.
+schema 的所有权保留在代码中。dev server 不编辑 schema，只读取 Zod schema metadata 来描述字段并校验记录。
 
-## Requirements
+## 环境要求
 
 - Node.js `>=20.19.0`
 - pnpm `10.31.0`
 
-Install dependencies:
+安装依赖：
 
 ```sh
 pnpm install
 ```
 
-## Schema Example
+## Schema 示例
 
-Create `swd.config.ts` in a static site project:
+在静态站点项目中创建 `swd.config.ts`：
 
 ```ts
 import { defineCollection, defineDataPackage } from "@whispering233/static-web-data/schema";
@@ -58,7 +58,7 @@ export default defineDataPackage({
 });
 ```
 
-Supported source storage:
+支持的源数据存储：
 
 ```ts
 { type: "json", path: "data/posts.json" }
@@ -66,33 +66,33 @@ Supported source storage:
 { type: "sqlite", path: "data/site.sqlite", table: "posts" }
 ```
 
-## Maintenance CLI
+## 维护端 CLI
 
-Build packages first when running from this repository:
+如果在本仓库中直接运行，需要先构建包：
 
 ```sh
 pnpm build
 ```
 
-Validate the embedded test project:
+校验内置测试项目：
 
 ```sh
 node packages/dev/dist/cli.js validate --cwd npm-test --config swd.config.ts
 ```
 
-Export runtime JSON:
+导出运行时 JSON：
 
 ```sh
 node packages/dev/dist/cli.js export --cwd npm-test --config swd.config.ts
 ```
 
-Start the maintenance server:
+启动维护端 dev server：
 
 ```sh
 node packages/dev/dist/cli.js dev --cwd npm-test --config swd.config.ts --port 4321
 ```
 
-In a consuming project after installing the dev package, use the package binary:
+在安装了 dev 包的消费项目中，可以直接使用包提供的 binary：
 
 ```sh
 swd validate
@@ -100,9 +100,9 @@ swd export
 swd dev
 ```
 
-## Runtime Client
+## 运行时 Client
 
-After export, static assets are written under the configured `output` directory:
+导出后，静态资源会写入配置中的 `output` 目录：
 
 ```text
 public/static-web-data/
@@ -111,7 +111,7 @@ public/static-web-data/
     posts.json
 ```
 
-Read records in the browser:
+在浏览器中读取记录：
 
 ```ts
 import { createStaticDataClient } from "@whispering233/static-web-data";
@@ -129,9 +129,9 @@ const publishedPosts = await posts.query({
 });
 ```
 
-## React Template
+## React 模板
 
-The React package is optional and only provides presentation helpers. Schema and data management do not depend on it.
+React 包是可选的，只提供展示层 helper。schema 和数据管理逻辑不依赖 React。
 
 ```tsx
 import {
@@ -162,9 +162,9 @@ export function App() {
 }
 ```
 
-## Development
+## 开发命令
 
-Common commands:
+常用命令：
 
 ```sh
 pnpm typecheck
@@ -177,73 +177,73 @@ pnpm pack:smoke
 pnpm run ci
 ```
 
-What each check covers:
+各命令用途：
 
-- `pnpm typecheck`: TypeScript type checks for publishable packages.
-- `pnpm test`: Vitest unit tests for core, dev, and React package behavior.
-- `pnpm build`: Builds publishable package `dist` directories.
-- `pnpm docs:api`: Generates TypeDoc API documentation into `.api-docs`.
-- `pnpm docs:api:check`: Checks API documentation generation without writing output.
-- `pnpm pack:dry`: Verifies npm tarball file contents and excludes `npm-test`, `.github`, scripts, and source tests.
-- `pnpm pack:smoke`: Packs all three packages, installs tarballs into a temporary copy of `npm-test`, and builds that app.
-- `pnpm run ci`: Runs the full local CI chain.
+- `pnpm typecheck`：对可发布包执行 TypeScript 类型检查。
+- `pnpm test`：运行 core、dev、React 包的 Vitest 单元测试。
+- `pnpm build`：构建可发布包的 `dist` 目录。
+- `pnpm docs:api`：用 TypeDoc 生成 API 文档到 `.api-docs`。
+- `pnpm docs:api:check`：检查 API 文档能否生成，但不写入输出文件。
+- `pnpm pack:dry`：检查 npm tarball 内容，确保排除 `npm-test`、`.github`、scripts 和源码测试文件。
+- `pnpm pack:smoke`：打包三个包，把 tarball 安装到临时复制的 `npm-test` 项目，并构建该应用。
+- `pnpm run ci`：运行完整本地 CI 链路。
 
-VS Code debugging instructions are available in [docs/vscode-debugging.md](https://github.com/whispering233/static-web-data-package/blob/main/docs/vscode-debugging.md).
+VS Code 调试说明见 [docs/vscode-debugging.md](https://github.com/whispering233/static-web-data-package/blob/main/docs/vscode-debugging.md)。
 
-## Publishing
+## 发布
 
-This repository is configured for npm-only publishing through GitHub Actions Trusted Publishing.
+本仓库配置为通过 GitHub Actions Trusted Publishing 发布到 npm。
 
-Workflow:
+工作流：
 
-- CI: `.github/workflows/ci.yml`
-- Publish: `.github/workflows/publish.yml`
+- CI：`.github/workflows/ci.yml`
+- 发布：`.github/workflows/publish.yml`
 
-Before publishing, configure npm Trusted Publishing for each package on npmjs.com:
+发布前，需要在 npmjs.com 上为每个包配置 Trusted Publishing：
 
 - `@whispering233/static-web-data`
 - `@whispering233/static-web-data-dev`
 - `@whispering233/static-web-data-react`
 
-Use GitHub Actions as the trusted publisher and set the workflow filename to `publish.yml`.
+Publisher 选择 GitHub Actions，workflow filename 填 `publish.yml`。
 
-Trigger publishing with a `v*` tag or a published GitHub Release after the repository has been pushed to GitHub.
+仓库推送到 GitHub 后，可以通过 `v*` tag 或发布 GitHub Release 触发发布。
 
-## API Documentation
+## API 文档
 
-API documentation is generated with TypeDoc:
+API 文档使用 TypeDoc 生成：
 
 ```sh
 pnpm docs:api
 ```
 
-The generated static site is written to `.api-docs`, which is intentionally ignored by Git. GitHub Pages deployment is handled by `.github/workflows/api-docs.yml`.
+生成的静态站点会写入 `.api-docs`，该目录已被 Git 忽略。GitHub Pages 部署由 `.github/workflows/api-docs.yml` 负责。
 
-To enable GitHub Pages:
+启用 GitHub Pages：
 
-1. Open the GitHub repository settings.
-2. Go to `Pages`.
-3. Under `Build and deployment`, set `Source` to `GitHub Actions`.
-4. Push to `main` or run the `API Docs` workflow manually.
+1. 打开 GitHub 仓库设置。
+2. 进入 `Pages`。
+3. 在 `Build and deployment` 中，将 `Source` 设置为 `GitHub Actions`。
+4. 推送到 `main`，或手动运行 `API Docs` workflow。
 
-The default GitHub Pages URL is:
+默认 GitHub Pages 地址：
 
 ```text
 https://whispering233.github.io/static-web-data-package/
 ```
 
-## Repository Layout
+## 仓库结构
 
 ```text
 packages/
-  core/    # schema helpers, runtime client, static export
-  dev/     # CLI, dev server, storage adapters
-  react/   # optional React hooks/components/styles
-npm-test/  # private packed-package test app
-scripts/   # packaging and publish helper scripts
-docs/      # development and debugging docs
+  core/    # schema helpers、runtime client、static export
+  dev/     # CLI、dev server、storage adapters
+  react/   # 可选 React hooks/components/styles
+npm-test/  # 私有 packed-package 测试应用
+scripts/   # 打包和发布辅助脚本
+docs/      # 开发和调试文档
 ```
 
-## License
+## 许可证
 
 MIT

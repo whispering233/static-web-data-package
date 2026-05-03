@@ -1,45 +1,45 @@
 # AGENTS.md
 
-Guidance for coding agents working in this repository.
+本文件为后续在本仓库中工作的编码代理提供约束和操作指南。
 
-## Project Summary
+## 项目概览
 
-This is a pnpm monorepo for Static Web Data, a TypeScript-first data framework for static websites.
+这是 Static Web Data 的 pnpm monorepo。Static Web Data 是一个面向静态网站的 TypeScript 优先数据框架。
 
-Publishable packages:
+可发布包：
 
-- `packages/core`: `@whispering233/static-web-data`
-- `packages/dev`: `@whispering233/static-web-data-dev`
-- `packages/react`: `@whispering233/static-web-data-react`
+- `packages/core`：`@whispering233/static-web-data`
+- `packages/dev`：`@whispering233/static-web-data-dev`
+- `packages/react`：`@whispering233/static-web-data-react`
 
-Private integration app:
+私有集成测试应用：
 
-- `npm-test`: Vite React app used to verify packed tarballs. This directory must not be published in npm package tarballs.
+- `npm-test`：用于验证 packed tarball 的 Vite React 应用。该目录绝不能进入 npm 发布包。
 
-## Architecture Rules
+## 架构规则
 
-- Keep schema definition and schema ownership in code. Use Zod schemas plus `.meta(...)` for field metadata.
-- Do not add a visual schema editor to the dev server unless explicitly requested.
-- Maintenance-time code may read/write JSON, CSV, and SQLite source storage.
-- Runtime browser code must read only exported static JSON bundles.
-- Keep `better-sqlite3` isolated to `packages/dev`; do not introduce native SQLite dependencies into `packages/core` or `packages/react`.
-- Keep UI styling decoupled from schema/storage logic. React components belong in `packages/react`.
-- Treat `packages/core` as the dependency root. `packages/dev` and `packages/react` may depend on core; core must not depend on dev or React.
+- schema 定义和 schema 所有权必须保留在代码中。字段 metadata 使用 Zod schema 的 `.meta(...)`。
+- 除非用户明确要求，不要给 dev server 增加可视化 schema 编辑器。
+- 维护期代码可以读写 JSON、CSV 和 SQLite 源存储。
+- 浏览器运行时代码只能读取导出的静态 JSON 数据包。
+- `better-sqlite3` 必须隔离在 `packages/dev` 中；不要把 native SQLite 依赖引入 `packages/core` 或 `packages/react`。
+- UI 样式必须与 schema/storage 逻辑解耦。React 组件应放在 `packages/react`。
+- `packages/core` 是依赖根。`packages/dev` 和 `packages/react` 可以依赖 core；core 不能依赖 dev 或 React。
 
-## Tooling
+## 工具链
 
-Required runtime:
+必需运行环境：
 
 - Node.js `>=20.19.0`
 - pnpm `10.31.0`
 
-Install dependencies:
+安装依赖：
 
 ```sh
 pnpm install
 ```
 
-Core commands:
+核心命令：
 
 ```sh
 pnpm typecheck
@@ -52,13 +52,13 @@ pnpm pack:smoke
 pnpm run ci
 ```
 
-Use `pnpm run ci` before claiming implementation work is complete.
+在声明实现完成前，必须运行 `pnpm run ci`。
 
-## Build Outputs
+## 构建产物
 
-Do not hand-edit generated `dist` files. Package build scripts clean and regenerate `dist`.
+不要手动编辑生成的 `dist` 文件。包的 build 脚本会清理并重新生成 `dist`。
 
-If you need to debug CLI behavior from built output:
+如果需要从构建产物调试 CLI 行为：
 
 ```sh
 pnpm build
@@ -66,73 +66,73 @@ node packages/dev/dist/cli.js validate --cwd npm-test --config swd.config.ts
 node packages/dev/dist/cli.js export --cwd npm-test --config swd.config.ts
 ```
 
-VS Code debugging instructions live in `docs/vscode-debugging.md`.
+VS Code 调试说明位于 `docs/vscode-debugging.md`。
 
-## Testing Expectations
+## 测试要求
 
-- Add or update Vitest tests for behavior changes in `packages/*/src`.
-- Storage adapter changes should cover roundtrip behavior.
-- Runtime client changes should cover `list`, `getById`, `query`, caching, and unknown collection errors when relevant.
-- Export changes should verify manifest shape and collection JSON output.
-- React changes should verify renderable output without consumer CSS.
-- Packaging changes should run `pnpm build`, `pnpm pack:dry`, and `pnpm pack:smoke`.
-- Public API surface changes should run `pnpm docs:api:check`.
+- 修改 `packages/*/src` 中的行为时，应新增或更新 Vitest 测试。
+- 修改 storage adapter 时，应覆盖 roundtrip 行为。
+- 修改 runtime client 时，应按需覆盖 `list`、`getById`、`query`、缓存和 unknown collection 错误。
+- 修改 export 逻辑时，应验证 manifest 结构和 collection JSON 输出。
+- 修改 React 包时，应验证组件在没有消费方 CSS 的情况下也能渲染。
+- 修改打包逻辑时，应运行 `pnpm build`、`pnpm pack:dry` 和 `pnpm pack:smoke`。
+- 修改公共 API 表面时，应运行 `pnpm docs:api:check`。
 
-## API Documentation
+## API 文档
 
-API docs use TypeDoc and are configured by `typedoc.json`.
+API 文档使用 TypeDoc，配置文件是 `typedoc.json`。
 
-Commands:
+命令：
 
 ```sh
 pnpm docs:api
 pnpm docs:api:check
 ```
 
-Generated docs are written to `.api-docs`, which must stay ignored. Do not commit generated TypeDoc HTML output.
+生成文档会写入 `.api-docs`。该目录必须保持 ignored，不要提交 TypeDoc 生成的 HTML 输出。
 
-GitHub Pages deployment is handled by `.github/workflows/api-docs.yml`. The repository Pages source should be set to GitHub Actions.
+GitHub Pages 部署由 `.github/workflows/api-docs.yml` 负责。仓库 Pages source 应设置为 GitHub Actions。
 
-## Package Publishing Constraints
+## 包发布约束
 
-Each publishable package uses a `files` whitelist. Keep npm tarballs limited to package metadata, README/LICENSE, and generated `dist`.
+每个可发布包都使用 `files` 白名单。npm tarball 应仅包含包 metadata、README/LICENSE 和生成后的 `dist`。
 
-Do not publish:
+不要发布：
 
 - `npm-test`
 - `.github`
 - `scripts`
-- source test files
-- local generated smoke directories such as `.pack` and `.tmp`
+- 源码测试文件
+- 本地生成的 smoke 目录，例如 `.pack` 和 `.tmp`
 
-The publish workflow is `.github/workflows/publish.yml` and is intended for npm Trusted Publishing. Do not add long-lived npm tokens unless explicitly requested.
+发布 workflow 是 `.github/workflows/publish.yml`，设计目标是 npm Trusted Publishing。除非用户明确要求，不要添加长期 npm token。
 
-## Git Rules
+## Git 规则
 
-- Do not revert user changes unless explicitly asked.
-- Keep unrelated refactors out of feature commits.
-- Before committing, check:
+- 不要还原用户改动，除非用户明确要求。
+- 不要把无关重构放进功能提交。
+- 提交前检查：
 
 ```sh
 git status --short --branch
 ```
 
-- Prefer focused commit messages, for example:
+- 提交信息应聚焦，例如：
   - `feat: add storage adapter behavior`
   - `fix: correct runtime query pagination`
   - `docs: update package usage guide`
 
-## Common Pitfalls
+## 常见坑
 
-- `pnpm ci` is not a script invocation. Use `pnpm run ci`.
-- Running `tsc --build` can emit unwanted artifacts if project settings change. Use the existing `pnpm typecheck` script.
-- If `better-sqlite3` native bindings are missing, run:
+- `pnpm ci` 不是脚本调用方式。应使用 `pnpm run ci`。
+- 如果项目设置变化，直接运行 `tsc --build` 可能产生不需要的产物。使用现有的 `pnpm typecheck` 脚本。
+- 如果缺失 `better-sqlite3` native binding，运行：
 
 ```sh
 pnpm --filter @whispering233/static-web-data-dev rebuild better-sqlite3
 ```
 
-- If a package tarball includes unexpected files, rebuild first and run:
+- 如果 package tarball 包含异常文件，先重新构建再检查：
 
 ```sh
 pnpm build
