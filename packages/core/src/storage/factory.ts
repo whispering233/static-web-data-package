@@ -1,16 +1,16 @@
-import type { CollectionDefinition } from "@whispering233/static-web-data/schema";
+import type { CollectionDefinition } from "../schema.js";
 import { createCsvStorageAdapter } from "./csv.js";
 import { createJsonStorageAdapter } from "./json.js";
 import { createSqliteStorageAdapter } from "./sqlite.js";
-import type { StorageAdapter } from "./types.js";
-
-export type { StorageAdapter } from "./types.js";
+import type { StorageAdapter, StorageAdapterOptions } from "./types.js";
 
 export function createStorageAdapter(
   collectionName: string,
   collection: CollectionDefinition,
-  cwd: string
+  options: StorageAdapterOptions = {}
 ): StorageAdapter {
+  const cwd = options.cwd ?? process.cwd();
+
   switch (collection.storage.type) {
     case "json":
       return createJsonStorageAdapter({ collectionName, collection, cwd });

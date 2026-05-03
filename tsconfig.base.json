@@ -25,6 +25,9 @@
     "exactOptionalPropertyTypes": true,
     "baseUrl": ".",
     "paths": {
+      "@whispering233/static-web-data/storage": [
+        "packages/core/src/storage/index.ts"
+      ],
       "@whispering233/static-web-data": [
         "packages/core/src/index.ts"
       ],

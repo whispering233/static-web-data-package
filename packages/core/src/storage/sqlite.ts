@@ -1,7 +1,7 @@
 import { existsSync } from "node:fs";
-import Database from "better-sqlite3";
-import type { CollectionDefinition } from "@whispering233/static-web-data/schema";
-import { describeCollection } from "@whispering233/static-web-data/schema";
+import { createRequire } from "node:module";
+import type { CollectionDefinition } from "../schema.js";
+import { describeCollection } from "../schema.js";
 import type { StorageAdapter, StorageAdapterContext } from "./types.js";
 import {
   ensureParentDir,
@@ -11,6 +11,19 @@ import {
 } from "./utils.js";
 
 type FieldKind = "string" | "number" | "boolean" | "json";
+
+type SqliteStatement = {
+  all(): unknown[];
+  run(...params: unknown[]): unknown;
+};
+
+type SqliteDatabase = {
+  prepare(sql: string): SqliteStatement;
+  transaction<TArgs extends unknown[]>(fn: (...args: TArgs) => unknown): (...args: TArgs) => unknown;
+  close(): void;
+};
+
+type SqliteDatabaseConstructor = new (filePath: string) => SqliteDatabase;
 
 type FieldPlan = {
   name: string;
@@ -92,8 +105,21 @@ export function createSqliteStorageAdapter(context: StorageAdapterContext): Stor
   };
 }
 
-function openDatabase(filePath: string) {
+function openDatabase(filePath: string): SqliteDatabase {
+  const Database = loadSqliteDatabase();
   return new Database(filePath);
+}
+
+function loadSqliteDatabase(): SqliteDatabaseConstructor {
+  try {
+    const require = createRequire(import.meta.url);
+    return require("better-sqlite3") as SqliteDatabaseConstructor;
+  } catch (error) {
+    throw new Error(
+      'SQLite storage requires optional dependency "better-sqlite3". Run pnpm --filter @whispering233/static-web-data rebuild better-sqlite3.',
+      { cause: error }
+    );
+  }
 }
 
 function createFieldPlan(collection: CollectionDefinition): FieldPlan[] {
@@ -125,7 +151,7 @@ function inferFieldKind(jsonSchema: unknown): FieldKind {
   return "string";
 }
 
-function ensureTable(db: Database.Database, table: string, fields: FieldPlan[], primaryKey: string): void {
+function ensureTable(db: SqliteDatabase, table: string, fields: FieldPlan[], primaryKey: string): void {
   const columns = fields.map((field) => {
     const primary = field.name === primaryKey ? " PRIMARY KEY NOT NULL" : "";
     return `${quoteIdentifier(field.name)} ${field.sqlType}${primary}`;
@@ -133,7 +159,7 @@ function ensureTable(db: Database.Database, table: string, fields: FieldPlan[], 
   db.prepare(`CREATE TABLE IF NOT EXISTS ${quoteIdentifier(table)} (${columns.join(", ")})`).run();
 }
 
-function createInsertStatement(db: Database.Database, table: string, fields: FieldPlan[]) {
+function createInsertStatement(db: SqliteDatabase, table: string, fields: FieldPlan[]): SqliteStatement {
   const columns = fields.map((field) => quoteIdentifier(field.name)).join(", ");
   const placeholders = fields.map(() => "?").join(", ");
   return db.prepare(`INSERT OR REPLACE INTO ${quoteIdentifier(table)} (${columns}) VALUES (${placeholders})`);

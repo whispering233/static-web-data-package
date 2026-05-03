@@ -4,7 +4,7 @@ import {
   type CollectionDefinition,
   describeCollection,
   validateCollectionRecords
-} from "@whispering233/static-web-data/schema";
+} from "../schema.js";
 
 export function resolveStoragePath(cwd: string, storagePath: string): string {
   return resolve(cwd, storagePath);

@@ -27,17 +27,13 @@
   },
   "dependencies": {
     "@hono/node-server": "^1.19.6",
-    "@whispering233/static-web-data": "^0.1.0",
-    "better-sqlite3": "^12.9.0",
+    "@whispering233/static-web-data": "^0.1.1",
     "commander": "^14.0.2",
-    "csv-parse": "^6.1.0",
-    "csv-stringify": "^6.6.0",
     "hono": "^4.10.7",
     "jiti": "^2.6.1",
     "zod": "^4.4.2"
   },
   "devDependencies": {
-    "@types/better-sqlite3": "^7.6.13",
     "tsup": "^8.5.1",
     "typescript": "^6.0.3",
     "vitest": "^4.1.5"

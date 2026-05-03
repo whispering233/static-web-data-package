@@ -6,6 +6,7 @@
     "packages/core/src/index.ts",
     "packages/core/src/schema.ts",
     "packages/core/src/export.ts",
+    "packages/core/src/storage/index.ts",
     "packages/dev/src/index.ts",
     "packages/react/src/index.tsx"
   ],
