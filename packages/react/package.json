@@ -1,6 +1,6 @@
 {
   "name": "@whispering233/static-web-data-react",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Optional React hooks and basic UI templates for Static Web Data.",
   "type": "module",
   "license": "MIT",
@@ -26,13 +26,13 @@
     "test": "vitest run src"
   },
   "peerDependencies": {
-    "@whispering233/static-web-data": "^0.1.0",
+    "@whispering233/static-web-data": "^0.2.0",
     "react": "^19.0.0"
   },
   "devDependencies": {
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",
-    "@whispering233/static-web-data": "^0.1.0",
+    "@whispering233/static-web-data": "^0.2.0",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
     "tsup": "^8.5.1",

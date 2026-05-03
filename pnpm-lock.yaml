@@ -36,13 +36,13 @@ importers:
   npm-test:
     dependencies:
       '@whispering233/static-web-data':
-        specifier: ^0.1.0
+        specifier: ^0.2.0
         version: link:../packages/core
       '@whispering233/static-web-data-dev':
-        specifier: ^0.1.0
+        specifier: ^0.2.0
         version: link:../packages/dev
       '@whispering233/static-web-data-react':
-        specifier: ^0.1.0
+        specifier: ^0.2.0
         version: link:../packages/react
       react:
         specifier: ^19.2.5
@@ -105,7 +105,7 @@ importers:
         specifier: ^1.19.6
         version: 1.19.14(hono@4.12.16)
       '@whispering233/static-web-data':
-        specifier: ^0.1.1
+        specifier: ^0.2.0
         version: link:../core
       commander:
         specifier: ^14.0.2
@@ -157,7 +157,7 @@ importers:
         specifier: ^19.2.3
         version: 19.2.3(@types/react@19.2.14)
       '@whispering233/static-web-data':
-        specifier: ^0.1.0
+        specifier: ^0.2.0
         version: link:../core
       react:
         specifier: ^19.2.5

@@ -1,6 +1,6 @@
 {
   "name": "@whispering233/static-web-data-dev",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Local CLI, dev server, and embedded data management UI for static web data.",
   "type": "module",
   "license": "MIT",
@@ -27,7 +27,7 @@
   },
   "dependencies": {
     "@hono/node-server": "^1.19.6",
-    "@whispering233/static-web-data": "^0.1.1",
+    "@whispering233/static-web-data": "^0.2.0",
     "commander": "^14.0.2",
     "hono": "^4.10.7",
     "jiti": "^2.6.1",

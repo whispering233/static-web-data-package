@@ -1,6 +1,6 @@
 {
   "name": "@whispering233/static-web-data",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Schema helpers and read-only runtime client for static website data packages.",
   "type": "module",
   "license": "MIT",

@@ -9,9 +9,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@whispering233/static-web-data": "^0.1.0",
-    "@whispering233/static-web-data-dev": "^0.1.0",
-    "@whispering233/static-web-data-react": "^0.1.0",
+    "@whispering233/static-web-data": "^0.2.0",
+    "@whispering233/static-web-data-dev": "^0.2.0",
+    "@whispering233/static-web-data-react": "^0.2.0",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
     "zod": "^4.4.2"
