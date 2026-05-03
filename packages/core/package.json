@@ -46,5 +46,10 @@
   },
   "publishConfig": {
     "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/whispering233/static-web-data-package.git",
+    "directory": "packages/core"
   }
 }
