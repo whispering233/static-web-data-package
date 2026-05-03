@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "generatedAt": "2026-05-03T00:36:30.615Z",
+  "collections": {
+    "posts": {
+      "primaryKey": "id",
+      "path": "collections/posts.json",
+      "schemaHash": "fd5718780deec950f050587ad2af95a8dd3bcd3f06ec2ff0a1e5417c4f9038f1",
+      "count": 2
+    }
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "name": "static-web-data-npm-test",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@whispering233/static-web-data": "^0.1.0",
+    "@whispering233/static-web-data-dev": "^0.1.0",
+    "@whispering233/static-web-data-react": "^0.1.0",
+    "react": "^19.2.5",
+    "react-dom": "^19.2.5",
+    "zod": "^4.4.2"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.7",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^6.0.1",
+    "typescript": "^6.0.3",
+    "vite": "^8.0.10"
+  },
+  "engines": {
+    "node": ">=20.19.0"
+  }
+}

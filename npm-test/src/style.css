@@ -1,0 +1,22 @@
+:root {
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  color-scheme: light dark;
+  background: Canvas;
+  color: CanvasText;
+}
+
+body {
+  margin: 0;
+}
+
+main {
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 40px 20px;
+}
+
+h1 {
+  margin: 0 0 24px;
+  font-size: 28px;
+  letter-spacing: 0;
+}

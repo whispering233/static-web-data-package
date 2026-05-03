@@ -1,0 +1,12 @@
+node_modules
+dist
+.turbo
+.cache
+.tmp
+.pack
+coverage
+*.tsbuildinfo
+playwright-report
+test-results
+npm-test/dist
+npm-test/node_modules

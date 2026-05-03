@@ -1,0 +1,12 @@
+[
+  {
+    "id": "welcome",
+    "title": "Welcome post",
+    "published": true
+  },
+  {
+    "id": "draft",
+    "title": "Draft post",
+    "published": false
+  }
+]

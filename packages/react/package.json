@@ -1,0 +1,48 @@
+{
+  "name": "@whispering233/static-web-data-react",
+  "version": "0.1.0",
+  "description": "Optional React hooks and basic UI templates for Static Web Data.",
+  "type": "module",
+  "license": "MIT",
+  "sideEffects": [
+    "./dist/styles.css"
+  ],
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "package.json"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./styles.css": "./dist/styles.css"
+  },
+  "scripts": {
+    "build": "node ../../scripts/clean-dist.mjs && tsup src/index.tsx --format esm --sourcemap && tsc -p tsconfig.build.json --emitDeclarationOnly && node ../../scripts/copy-react-css.mjs",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run src"
+  },
+  "peerDependencies": {
+    "@whispering233/static-web-data": "^0.1.0",
+    "react": "^19.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.7",
+    "@types/react-dom": "^19.2.3",
+    "@whispering233/static-web-data": "^0.1.0",
+    "react": "^19.2.5",
+    "react-dom": "^19.2.5",
+    "tsup": "^8.5.1",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.5"
+  },
+  "engines": {
+    "node": ">=20.19.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

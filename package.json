@@ -1,0 +1,35 @@
+{
+  "name": "static-web-data-package-workspace",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "packageManager": "pnpm@10.31.0",
+  "engines": {
+    "node": ">=20.19.0"
+  },
+  "scripts": {
+    "build": "pnpm -r --filter @whispering233/static-web-data --filter @whispering233/static-web-data-dev --filter @whispering233/static-web-data-react build",
+    "typecheck": "pnpm -r --filter @whispering233/static-web-data --filter @whispering233/static-web-data-dev --filter @whispering233/static-web-data-react exec tsc --noEmit -p tsconfig.json",
+    "lint": "pnpm typecheck",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "pack:dry": "node scripts/check-packages.mjs",
+    "pack:smoke": "node scripts/pack-smoke.mjs",
+    "ci": "pnpm typecheck && pnpm test && pnpm build && pnpm pack:dry && pnpm pack:smoke"
+  },
+  "devDependencies": {
+    "@changesets/cli": "^2.29.7",
+    "@playwright/test": "^1.57.0",
+    "@types/node": "^24.10.0",
+    "tsup": "^8.5.1",
+    "typescript": "^6.0.3",
+    "vite": "^8.0.10",
+    "vitest": "^4.1.5"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "better-sqlite3",
+      "esbuild"
+    ]
+  }
+}
