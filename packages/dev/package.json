@@ -1,7 +1,7 @@
 {
   "name": "@whispering233/static-web-data-dev",
   "version": "0.1.0",
-  "description": "Local maintenance CLI, dev server, and storage adapters for static web data.",
+  "description": "Local CLI, dev server, and embedded data management UI for static web data.",
   "type": "module",
   "license": "MIT",
   "sideEffects": false,
@@ -21,7 +21,7 @@
     }
   },
   "scripts": {
-    "build": "node ../../scripts/clean-dist.mjs && tsup src/index.ts src/cli.ts --format esm --sourcemap && tsc -p tsconfig.build.json --emitDeclarationOnly",
+    "build": "node ../../scripts/clean-dist.mjs && tsup src/index.ts src/cli.ts --format esm --sourcemap && tsc -p tsconfig.build.json --emitDeclarationOnly && vite build --config vite.client.config.ts",
     "typecheck": "tsc --noEmit",
     "test": "vitest run src"
   },
@@ -34,8 +34,14 @@
     "zod": "^4.4.2"
   },
   "devDependencies": {
+    "@types/react": "^19.2.7",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^6.0.1",
+    "react": "^19.2.5",
+    "react-dom": "^19.2.5",
     "tsup": "^8.5.1",
     "typescript": "^6.0.3",
+    "vite": "^8.0.10",
     "vitest": "^4.1.5"
   },
   "engines": {
