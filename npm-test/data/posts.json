@@ -8,5 +8,10 @@
     "id": "draft",
     "title": "Draft post",
     "published": false
+  },
+  {
+    "id": "draft test save",
+    "title": "Draft post",
+    "published": false
   }
 ]
