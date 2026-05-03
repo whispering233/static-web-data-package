@@ -8,6 +8,7 @@ import {
   getFieldNames,
   removeFromRecords,
   resolveStoragePath,
+  upsertAllIntoRecords,
   upsertIntoRecords,
   validateRecords
 } from "./utils.js";
@@ -46,6 +47,12 @@ export function createCsvStorageAdapter(context: StorageAdapterContext): Storage
       const result = upsertIntoRecords(context.collectionName, context.collection, current, record);
       await writeCsvRows(filePath, context.collection, result.records);
       return result.record;
+    },
+    async upsertAll(records) {
+      const current = await this.readAll();
+      const nextRecords = upsertAllIntoRecords(context.collectionName, context.collection, current, records);
+      await writeCsvRows(filePath, context.collection, nextRecords);
+      return nextRecords;
     },
     async delete(id) {
       const current = await this.readAll();
@@ -123,9 +130,14 @@ function collectJsonSchemaTypes(jsonSchema: unknown): unknown[] {
     type?: unknown;
     anyOf?: unknown;
     oneOf?: unknown;
+    allOf?: unknown;
   };
   const type = Array.isArray(schema.type) ? schema.type : [schema.type];
-  const branches = Array.isArray(schema.anyOf) ? schema.anyOf : Array.isArray(schema.oneOf) ? schema.oneOf : [];
+  const branches = [
+    ...(Array.isArray(schema.anyOf) ? schema.anyOf : []),
+    ...(Array.isArray(schema.oneOf) ? schema.oneOf : []),
+    ...(Array.isArray(schema.allOf) ? schema.allOf : [])
+  ];
   return [...type, ...branches.flatMap((branch) => collectJsonSchemaTypes(branch))];
 }
 
@@ -138,7 +150,13 @@ function parseCell(value: string, plan: CsvFieldPlan): unknown {
     return JSON.parse(trimmed);
   }
   if (plan.kind === "boolean") {
-    return trimmed === "true";
+    if (trimmed === "true") {
+      return true;
+    }
+    if (trimmed === "false") {
+      return false;
+    }
+    return value;
   }
   if (plan.kind === "number") {
     return Number(trimmed);

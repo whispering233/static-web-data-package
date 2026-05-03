@@ -10,16 +10,19 @@ export type CreateDevAppOptions = {
   config: DataPackageDefinition;
   cwd: string;
   clientDistDir?: string;
+  hostname?: string;
+  port?: number;
+  trustedHosts?: string[];
+  trustedOrigins?: string[];
 };
 
-export type StartDevServerOptions = CreateDevAppOptions & {
-  port?: number;
-};
+export type StartDevServerOptions = CreateDevAppOptions;
 
 export function createDevApp(options: CreateDevAppOptions): Hono {
   const app = new Hono();
   const repository = createDataRepository(options.config, { cwd: options.cwd });
   const clientDistDir = options.clientDistDir ?? join(dirname(fileURLToPath(import.meta.url)), "client");
+  const trustedAccess = createTrustedAccess(options);
 
   app.get("/", async (context) => {
     const html = await readFile(join(clientDistDir, "index.html"), "utf8");
@@ -44,6 +47,27 @@ export function createDevApp(options: CreateDevAppOptions): Hono {
   });
 
   app.get("/api/collections", (context) => context.json(repository.listCollections()));
+
+  app.use("/api/*", async (context, next) => {
+    if (!isMutatingRequest(context.req.raw)) {
+      return next();
+    }
+
+    if (!isTrustedHost(context.req.header("host") ?? new URL(context.req.url).host, trustedAccess)) {
+      return context.json({ error: "Mutating API requests must use a trusted Host." }, 403);
+    }
+
+    const origin = context.req.header("origin");
+    if (origin && !trustedAccess.origins.has(origin)) {
+      return context.json({ error: "Cross-origin mutating requests are not allowed." }, 403);
+    }
+
+    if (requiresJsonBody(context.req.raw) && !isJsonContentType(context.req.header("content-type"))) {
+      return context.json({ error: "JSON mutation requests must use application/json." }, 415);
+    }
+
+    return next();
+  });
 
   app.get("/api/collections/:name/records", async (context) => {
     const records = await repository.collection(context.req.param("name")).readAll();
@@ -71,11 +95,7 @@ export function createDevApp(options: CreateDevAppOptions): Hono {
     }
     const adapter = repository.collection(context.req.param("name"));
     if (body.mode === "upsert") {
-      const saved = [];
-      for (const record of body.records) {
-        saved.push(await adapter.upsert(record));
-      }
-      return context.json(saved);
+      return context.json(await adapter.upsertAll(body.records));
     }
     return context.json(await adapter.writeAll(body.records));
   });
@@ -96,16 +116,97 @@ export function createDevApp(options: CreateDevAppOptions): Hono {
   return app;
 }
 
-export async function startDevServer(options: StartDevServerOptions): Promise<{ port: number; close(): void }> {
+export async function startDevServer(options: StartDevServerOptions): Promise<{ port: number; hostname: string; close(): void }> {
   const port = options.port ?? 4321;
-  const app = createDevApp(options);
-  const server = serve({ fetch: app.fetch, port });
+  const hostname = options.hostname ?? "127.0.0.1";
+  const app = createDevApp({ ...options, hostname, port });
+  const server = serve({ fetch: app.fetch, hostname, port });
   return {
+    hostname,
     port,
     close() {
       server.close();
     }
   };
+}
+
+function isMutatingRequest(request: Request): boolean {
+  const pathname = new URL(request.url).pathname;
+  return pathname.startsWith("/api/") && (request.method === "POST" || request.method === "DELETE");
+}
+
+function requiresJsonBody(request: Request): boolean {
+  const pathname = new URL(request.url).pathname;
+  return request.method === "POST" && /^\/api\/collections\/[^/]+\/(?:records|import)$/.test(pathname);
+}
+
+function isJsonContentType(contentType: string | undefined): boolean {
+  return contentType?.split(";")[0]?.trim().toLowerCase() === "application/json";
+}
+
+type TrustedAccess = {
+  hostnames: Set<string>;
+  origins: Set<string>;
+  port: string;
+};
+
+function createTrustedAccess(options: CreateDevAppOptions): TrustedAccess {
+  const port = String(options.port ?? 4321);
+  const configuredHostname = normalizeHostname(options.hostname ?? "127.0.0.1");
+  const hostnames = new Set([configuredHostname, ...normalizeHostnames(options.trustedHosts ?? [])]);
+  if (isLoopbackHostname(configuredHostname) || configuredHostname === "0.0.0.0" || configuredHostname === "::") {
+    for (const alias of ["127.0.0.1", "localhost", "::1"]) {
+      hostnames.add(alias);
+    }
+  }
+  const origins = new Set([
+    ...Array.from(hostnames, (hostname) => `http://${formatHostnameForOrigin(hostname)}:${port}`),
+    ...(options.trustedOrigins ?? [])
+  ]);
+  return { hostnames, origins, port };
+}
+
+function normalizeHostnames(hosts: string[]): string[] {
+  return hosts.map((host) => parseHost(host).hostname).filter((host) => host.length > 0);
+}
+
+function isTrustedHost(host: string, trustedAccess: TrustedAccess): boolean {
+  const parsed = parseHost(host);
+  return trustedAccess.hostnames.has(parsed.hostname) && (!parsed.port || parsed.port === trustedAccess.port);
+}
+
+function parseHost(host: string): { hostname: string; port?: string } {
+  const value = host.trim().toLowerCase();
+  if (value.startsWith("[")) {
+    const end = value.indexOf("]");
+    if (end >= 0) {
+      const hostname = normalizeHostname(value.slice(1, end));
+      const rest = value.slice(end + 1);
+      if (rest.startsWith(":")) {
+        return { hostname, port: rest.slice(1) };
+      }
+      return { hostname };
+    }
+  }
+  const parts = value.split(":");
+  if (parts.length === 2) {
+    const hostname = normalizeHostname(parts[0] ?? "");
+    const port = parts[1];
+    return port ? { hostname, port } : { hostname };
+  }
+  return { hostname: normalizeHostname(value) };
+}
+
+function normalizeHostname(hostname: string): string {
+  return hostname.trim().toLowerCase().replace(/^\[(.*)\]$/, "$1");
+}
+
+function isLoopbackHostname(hostname: string): boolean {
+  return hostname === "localhost" || hostname === "127.0.0.1" || hostname === "::1";
+}
+
+function formatHostnameForOrigin(hostname: string): string {
+  return hostname.includes(":") ? `[${hostname}]` : hostname;
 }
 
 function resolveClientAssetPath(clientDistDir: string, pathname: string): string | undefined {

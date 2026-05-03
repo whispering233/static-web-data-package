@@ -51,6 +51,26 @@ export function upsertIntoRecords(
   return { records: nextRecords, record };
 }
 
+export function upsertAllIntoRecords(
+  collectionName: string,
+  collection: CollectionDefinition,
+  records: Record<string, unknown>[],
+  rawRecords: unknown[]
+): Record<string, unknown>[] {
+  const parsedRecords = validateRecords(collectionName, collection, rawRecords);
+  const nextRecords = records.slice();
+  for (const record of parsedRecords) {
+    const key = getPrimaryKeyValue(collectionName, collection, record);
+    const index = nextRecords.findIndex((item) => String(item[collection.primaryKey]) === key);
+    if (index >= 0) {
+      nextRecords[index] = record;
+    } else {
+      nextRecords.push(record);
+    }
+  }
+  return nextRecords;
+}
+
 export function removeFromRecords(
   collection: CollectionDefinition,
   records: Record<string, unknown>[],

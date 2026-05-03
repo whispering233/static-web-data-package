@@ -228,6 +228,96 @@ describe("storage adapters", () => {
     }
   });
 
+  it("rejects invalid CSV boolean text instead of coercing it to false", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "swd-csv-boolean-"));
+    try {
+      const collection = defineCollection({
+        primaryKey: "id",
+        storage: { type: "csv", path: "records.csv" },
+        schema: z.object({
+          id: z.string(),
+          published: z.boolean()
+        })
+      });
+      const adapter = createStorageAdapter("posts", collection, { cwd: dir });
+
+      await writeFile(join(dir, "records.csv"), "id,published\na,False\nb,treu\nc,yes\n", "utf8");
+
+      await expect(adapter.readAll()).rejects.toThrow("published: Invalid input: expected boolean, received string");
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+
+  it.each([
+    ["JSON", { type: "json" as const, path: "records.json" }],
+    ["CSV", { type: "csv" as const, path: "records.csv" }],
+    ["SQLite", { type: "sqlite" as const, path: "records.sqlite", table: "posts" }]
+  ])("bulk upserts %s records with merge semantics in core", async (_label, storage) => {
+    const dir = await mkdtemp(join(tmpdir(), `swd-upsert-all-${storage.type}-`));
+    try {
+      const collection = defineCollection({
+        primaryKey: "id",
+        storage,
+        schema: z.object({
+          id: z.string(),
+          title: z.string().min(1)
+        })
+      });
+      const adapter = createStorageAdapter("posts", collection, { cwd: dir });
+
+      await adapter.writeAll([
+        { id: "a", title: "Alpha" },
+        { id: "b", title: "Beta" }
+      ]);
+
+      await expect(adapter.upsertAll([
+        { id: "b", title: "Beta updated" },
+        { id: "c", title: "Gamma" }
+      ])).resolves.toEqual([
+        { id: "a", title: "Alpha" },
+        { id: "b", title: "Beta updated" },
+        { id: "c", title: "Gamma" }
+      ]);
+      expect(await adapter.readAll()).toEqual([
+        { id: "a", title: "Alpha" },
+        { id: "b", title: "Beta updated" },
+        { id: "c", title: "Gamma" }
+      ]);
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+
+  it.each([
+    ["JSON", { type: "json" as const, path: "records.json" }],
+    ["CSV", { type: "csv" as const, path: "records.csv" }],
+    ["SQLite", { type: "sqlite" as const, path: "records.sqlite", table: "posts" }]
+  ])("does not partially persist invalid %s bulk upserts", async (_label, storage) => {
+    const dir = await mkdtemp(join(tmpdir(), `swd-upsert-all-atomic-${storage.type}-`));
+    try {
+      const collection = defineCollection({
+        primaryKey: "id",
+        storage,
+        schema: z.object({
+          id: z.string(),
+          title: z.string().min(1)
+        })
+      });
+      const adapter = createStorageAdapter("posts", collection, { cwd: dir });
+
+      await adapter.writeAll([{ id: "a", title: "Alpha" }]);
+
+      await expect(adapter.upsertAll([
+        { id: "b", title: "Beta" },
+        { id: "c", title: "" }
+      ])).rejects.toThrow("title");
+      expect(await adapter.readAll()).toEqual([{ id: "a", title: "Alpha" }]);
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+
   it("roundtrips SQLite records", async () => {
     const dir = await mkdtemp(join(tmpdir(), "swd-sqlite-"));
     try {
@@ -285,6 +375,154 @@ describe("storage adapters", () => {
           jsonText: "[\"literal\"]",
           metadata: { featured: false, rank: 2 },
           tags: []
+        }
+      ]);
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+
+  it("roundtrips SQLite nullable default optional scalar and JSON fields", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "swd-sqlite-nullable-"));
+    try {
+      const nullableSchema = z.object({
+        id: z.string(),
+        optionalTitle: z.string().optional(),
+        defaultTitle: z.string().default("Untitled"),
+        nullableTitle: z.string().nullable(),
+        optionalCount: z.number().optional(),
+        defaultCount: z.number().default(7),
+        nullableCount: z.number().nullable(),
+        optionalPublished: z.boolean().optional(),
+        defaultPublished: z.boolean().default(true),
+        nullablePublished: z.boolean().nullable(),
+        optionalMetadata: z.object({ featured: z.boolean() }).optional(),
+        defaultMetadata: z.object({ featured: z.boolean() }).default({ featured: true }),
+        nullableMetadata: z.object({ featured: z.boolean() }).nullable(),
+        optionalTags: z.array(z.string()).optional(),
+        defaultTags: z.array(z.string()).default(["default"]),
+        nullableTags: z.array(z.string()).nullable()
+      });
+      const collection = defineCollection({
+        primaryKey: "id",
+        storage: { type: "sqlite", path: "records.sqlite", table: "posts" },
+        schema: nullableSchema
+      });
+      const adapter = createStorageAdapter("posts", collection, { cwd: dir });
+
+      await adapter.writeAll([
+        {
+          id: "a",
+          nullableTitle: null,
+          nullableCount: null,
+          nullablePublished: null,
+          nullableMetadata: null,
+          nullableTags: null
+        },
+        {
+          id: "b",
+          optionalTitle: "Optional",
+          defaultTitle: "Custom",
+          nullableTitle: "Nullable",
+          optionalCount: 3,
+          defaultCount: 4,
+          nullableCount: 5,
+          optionalPublished: false,
+          defaultPublished: false,
+          nullablePublished: true,
+          optionalMetadata: { featured: false },
+          defaultMetadata: { featured: false },
+          nullableMetadata: { featured: true },
+          optionalTags: ["custom"],
+          defaultTags: ["custom-default"],
+          nullableTags: ["nullable"]
+        }
+      ]);
+
+      expect(await adapter.readAll()).toEqual([
+        {
+          id: "a",
+          defaultTitle: "Untitled",
+          nullableTitle: null,
+          defaultCount: 7,
+          nullableCount: null,
+          defaultPublished: true,
+          nullablePublished: null,
+          defaultMetadata: { featured: true },
+          nullableMetadata: null,
+          defaultTags: ["default"],
+          nullableTags: null
+        },
+        {
+          id: "b",
+          optionalTitle: "Optional",
+          defaultTitle: "Custom",
+          nullableTitle: "Nullable",
+          optionalCount: 3,
+          defaultCount: 4,
+          nullableCount: 5,
+          optionalPublished: false,
+          defaultPublished: false,
+          nullablePublished: true,
+          optionalMetadata: { featured: false },
+          defaultMetadata: { featured: false },
+          nullableMetadata: { featured: true },
+          optionalTags: ["custom"],
+          defaultTags: ["custom-default"],
+          nullableTags: ["nullable"]
+        }
+      ]);
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+
+  it("preserves SQLite explicit null for optional nullable fields while omitting missing optional fields", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "swd-sqlite-optional-nullable-"));
+    try {
+      const nullableOptionalSchema = z.object({
+        id: z.string(),
+        nullableTitle: z.string().nullable().optional(),
+        nullableCount: z.number().nullable().optional(),
+        nullablePublished: z.boolean().nullable().optional(),
+        nullableMetadata: z.object({ featured: z.boolean() }).nullable().optional(),
+        nullableTags: z.array(z.string()).nullable().optional(),
+        optionalTitle: z.string().optional(),
+        optionalCount: z.number().optional(),
+        optionalPublished: z.boolean().optional()
+      });
+      const collection = defineCollection({
+        primaryKey: "id",
+        storage: { type: "sqlite", path: "records.sqlite", table: "posts" },
+        schema: nullableOptionalSchema
+      });
+      const adapter = createStorageAdapter("posts", collection, { cwd: dir });
+
+      await adapter.writeAll([
+        {
+          id: "a"
+        },
+        {
+          id: "b",
+          nullableTitle: null,
+          nullableCount: null,
+          nullablePublished: null,
+          nullableMetadata: null,
+          nullableTags: null
+        }
+      ]);
+
+      expect(await adapter.readAll()).toEqual([
+        {
+          id: "a"
+        },
+        {
+          id: "b",
+          nullableTitle: null,
+          nullableCount: null,
+          nullablePublished: null,
+          nullableMetadata: null,
+          nullableTags: null
         }
       ]);
     } finally {

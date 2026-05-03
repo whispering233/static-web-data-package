@@ -4,6 +4,7 @@ export type StorageAdapter<TRecord extends Record<string, unknown> = Record<stri
   readAll(): Promise<TRecord[]>;
   writeAll(records: unknown[]): Promise<TRecord[]>;
   upsert(record: unknown): Promise<TRecord>;
+  upsertAll(records: unknown[]): Promise<TRecord[]>;
   delete(id: string | number): Promise<void>;
 };
 

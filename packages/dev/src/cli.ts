@@ -29,12 +29,13 @@ program.command("export").description("Export read-only runtime JSON data bundle
 program
   .command("dev")
   .description("Start the local data maintenance server.")
+  .option("--host <host>", "Host", "127.0.0.1")
   .option("-p, --port <port>", "Port", "4321")
-  .action(async (commandOptions: { port: string }) => {
+  .action(async (commandOptions: { host: string; port: string }) => {
     await runWithConfig(async (config, cwd) => {
       const port = Number(commandOptions.port);
-      await startDevServer({ config, cwd, port });
-      console.log(`Static Web Data dev server running at http://localhost:${port}`);
+      const server = await startDevServer({ config, cwd, hostname: commandOptions.host, port });
+      console.log(`Static Web Data dev server running at http://${server.hostname}:${server.port}`);
     });
   });
 

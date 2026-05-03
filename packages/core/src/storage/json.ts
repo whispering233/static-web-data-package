@@ -5,6 +5,7 @@ import {
   getPrimaryKeyValue,
   removeFromRecords,
   resolveStoragePath,
+  upsertAllIntoRecords,
   upsertIntoRecords,
   validateRecords
 } from "./utils.js";
@@ -29,6 +30,12 @@ export function createJsonStorageAdapter(context: StorageAdapterContext): Storag
       getPrimaryKeyValue(context.collectionName, context.collection, result.record);
       await writeJsonArray(filePath, result.records);
       return result.record;
+    },
+    async upsertAll(records) {
+      const current = await this.readAll();
+      const nextRecords = upsertAllIntoRecords(context.collectionName, context.collection, current, records);
+      await writeJsonArray(filePath, nextRecords);
+      return nextRecords;
     },
     async delete(id) {
       const current = await this.readAll();
