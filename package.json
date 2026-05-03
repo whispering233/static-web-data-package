@@ -13,15 +13,18 @@
     "lint": "pnpm typecheck",
     "test": "vitest run",
     "test:watch": "vitest",
+    "docs:api": "typedoc --options typedoc.json",
+    "docs:api:check": "typedoc --options typedoc.json --emit none",
     "pack:dry": "node scripts/check-packages.mjs",
     "pack:smoke": "node scripts/pack-smoke.mjs",
-    "ci": "pnpm typecheck && pnpm test && pnpm build && pnpm pack:dry && pnpm pack:smoke"
+    "ci": "pnpm typecheck && pnpm test && pnpm build && pnpm docs:api:check && pnpm pack:dry && pnpm pack:smoke"
   },
   "devDependencies": {
     "@changesets/cli": "^2.29.7",
     "@playwright/test": "^1.57.0",
     "@types/node": "^24.10.0",
     "tsup": "^8.5.1",
+    "typedoc": "^0.28.19",
     "typescript": "^6.0.3",
     "vite": "^8.0.10",
     "vitest": "^4.1.5"

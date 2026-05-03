@@ -4,6 +4,7 @@ dist
 .cache
 .tmp
 .pack
+.api-docs
 coverage
 *.tsbuildinfo
 playwright-report

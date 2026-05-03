@@ -45,6 +45,8 @@ Core commands:
 pnpm typecheck
 pnpm test
 pnpm build
+pnpm docs:api
+pnpm docs:api:check
 pnpm pack:dry
 pnpm pack:smoke
 pnpm run ci
@@ -74,6 +76,22 @@ VS Code debugging instructions live in `docs/vscode-debugging.md`.
 - Export changes should verify manifest shape and collection JSON output.
 - React changes should verify renderable output without consumer CSS.
 - Packaging changes should run `pnpm build`, `pnpm pack:dry`, and `pnpm pack:smoke`.
+- Public API surface changes should run `pnpm docs:api:check`.
+
+## API Documentation
+
+API docs use TypeDoc and are configured by `typedoc.json`.
+
+Commands:
+
+```sh
+pnpm docs:api
+pnpm docs:api:check
+```
+
+Generated docs are written to `.api-docs`, which must stay ignored. Do not commit generated TypeDoc HTML output.
+
+GitHub Pages deployment is handled by `.github/workflows/api-docs.yml`. The repository Pages source should be set to GitHub Actions.
 
 ## Package Publishing Constraints
 

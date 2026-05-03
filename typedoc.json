@@ -1,0 +1,29 @@
+{
+  "$schema": "https://typedoc.org/schema.json",
+  "name": "Static Web Data API",
+  "lang": "zh",
+  "entryPoints": [
+    "packages/core/src/index.ts",
+    "packages/core/src/schema.ts",
+    "packages/core/src/export.ts",
+    "packages/dev/src/index.ts",
+    "packages/react/src/index.tsx"
+  ],
+  "entryPointStrategy": "resolve",
+  "tsconfig": "tsconfig.typecheck.json",
+  "out": ".api-docs",
+  "readme": "README.md",
+  "exclude": [
+    "**/*.test.ts",
+    "**/*.test.tsx"
+  ],
+  "excludePrivate": true,
+  "excludeInternal": true,
+  "excludeExternals": true,
+  "includeVersion": true,
+  "githubPages": true,
+  "navigationLinks": {
+    "GitHub": "https://github.com/whispering233/static-web-data-package",
+    "npm": "https://www.npmjs.com/org/whispering233"
+  }
+}

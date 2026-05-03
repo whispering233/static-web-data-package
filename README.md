@@ -170,6 +170,8 @@ Common commands:
 pnpm typecheck
 pnpm test
 pnpm build
+pnpm docs:api
+pnpm docs:api:check
 pnpm pack:dry
 pnpm pack:smoke
 pnpm run ci
@@ -180,11 +182,13 @@ What each check covers:
 - `pnpm typecheck`: TypeScript type checks for publishable packages.
 - `pnpm test`: Vitest unit tests for core, dev, and React package behavior.
 - `pnpm build`: Builds publishable package `dist` directories.
+- `pnpm docs:api`: Generates TypeDoc API documentation into `.api-docs`.
+- `pnpm docs:api:check`: Checks API documentation generation without writing output.
 - `pnpm pack:dry`: Verifies npm tarball file contents and excludes `npm-test`, `.github`, scripts, and source tests.
 - `pnpm pack:smoke`: Packs all three packages, installs tarballs into a temporary copy of `npm-test`, and builds that app.
 - `pnpm run ci`: Runs the full local CI chain.
 
-VS Code debugging instructions are available in [docs/vscode-debugging.md](docs/vscode-debugging.md).
+VS Code debugging instructions are available in [docs/vscode-debugging.md](https://github.com/whispering233/static-web-data-package/blob/main/docs/vscode-debugging.md).
 
 ## Publishing
 
@@ -204,6 +208,29 @@ Before publishing, configure npm Trusted Publishing for each package on npmjs.co
 Use GitHub Actions as the trusted publisher and set the workflow filename to `publish.yml`.
 
 Trigger publishing with a `v*` tag or a published GitHub Release after the repository has been pushed to GitHub.
+
+## API Documentation
+
+API documentation is generated with TypeDoc:
+
+```sh
+pnpm docs:api
+```
+
+The generated static site is written to `.api-docs`, which is intentionally ignored by Git. GitHub Pages deployment is handled by `.github/workflows/api-docs.yml`.
+
+To enable GitHub Pages:
+
+1. Open the GitHub repository settings.
+2. Go to `Pages`.
+3. Under `Build and deployment`, set `Source` to `GitHub Actions`.
+4. Push to `main` or run the `API Docs` workflow manually.
+
+The default GitHub Pages URL is:
+
+```text
+https://whispering233.github.io/static-web-data-package/
+```
 
 ## Repository Layout
 
