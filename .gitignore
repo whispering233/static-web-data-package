@@ -10,3 +10,4 @@ playwright-report
 test-results
 npm-test/dist
 npm-test/node_modules
+docs/test/
