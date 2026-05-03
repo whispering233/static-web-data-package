@@ -1,8 +1,7 @@
 import { Hono } from "hono";
 import { serve } from "@hono/node-server";
-import { describeDataPackage, type DataPackageDefinition } from "@whispering233/static-web-data/schema";
-import { exportStaticData, validateProjectData } from "./commands.js";
-import { createStorageAdapter } from "./storage/index.js";
+import type { DataPackageDefinition } from "@whispering233/static-web-data/schema";
+import { createDataRepository } from "@whispering233/static-web-data/storage";
 
 export type CreateDevAppOptions = {
   config: DataPackageDefinition;
@@ -15,37 +14,34 @@ export type StartDevServerOptions = CreateDevAppOptions & {
 
 export function createDevApp(options: CreateDevAppOptions): Hono {
   const app = new Hono();
+  const repository = createDataRepository(options.config, { cwd: options.cwd });
 
   app.get("/", (context) => context.html(createMaintenanceHtml()));
 
-  app.get("/api/collections", (context) => context.json(describeDataPackage(options.config)));
+  app.get("/api/collections", (context) => context.json(repository.listCollections()));
 
   app.get("/api/collections/:name/records", async (context) => {
-    const { name, collection } = getCollection(options.config, context.req.param("name"));
-    const records = await createStorageAdapter(name, collection, options.cwd).readAll();
+    const records = await repository.collection(context.req.param("name")).readAll();
     return context.json(records);
   });
 
   app.post("/api/collections/:name/records", async (context) => {
-    const { name, collection } = getCollection(options.config, context.req.param("name"));
     const record = await context.req.json();
-    const saved = await createStorageAdapter(name, collection, options.cwd).upsert(record);
+    const saved = await repository.collection(context.req.param("name")).upsert(record);
     return context.json(saved);
   });
 
   app.delete("/api/collections/:name/records/:id", async (context) => {
-    const { name, collection } = getCollection(options.config, context.req.param("name"));
-    await createStorageAdapter(name, collection, options.cwd).delete(context.req.param("id"));
+    await repository.collection(context.req.param("name")).delete(context.req.param("id"));
     return context.json({ ok: true });
   });
 
   app.post("/api/collections/:name/import", async (context) => {
-    const { name, collection } = getCollection(options.config, context.req.param("name"));
     const body = (await context.req.json()) as { records?: unknown[]; mode?: "replace" | "upsert" };
     if (!Array.isArray(body.records)) {
       return context.json({ error: "Import body must include a records array." }, 400);
     }
-    const adapter = createStorageAdapter(name, collection, options.cwd);
+    const adapter = repository.collection(context.req.param("name"));
     if (body.mode === "upsert") {
       const saved = [];
       for (const record of body.records) {
@@ -57,13 +53,12 @@ export function createDevApp(options: CreateDevAppOptions): Hono {
   });
 
   app.get("/api/collections/:name/export", async (context) => {
-    const { name, collection } = getCollection(options.config, context.req.param("name"));
-    return context.json(await createStorageAdapter(name, collection, options.cwd).readAll());
+    return context.json(await repository.collection(context.req.param("name")).readAll());
   });
 
-  app.get("/api/validate", async (context) => context.json(await validateProjectData(options.config, options.cwd)));
+  app.get("/api/validate", async (context) => context.json(await repository.validate()));
 
-  app.post("/api/export", async (context) => context.json(await exportStaticData(options.config, options.cwd)));
+  app.post("/api/export", async (context) => context.json(await repository.exportStaticBundle()));
 
   app.onError((error, context) => {
     const status = /Unknown collection/.test(error.message) ? 404 : 400;
@@ -83,14 +78,6 @@ export async function startDevServer(options: StartDevServerOptions): Promise<{ 
       server.close();
     }
   };
-}
-
-function getCollection(config: DataPackageDefinition, name: string) {
-  const collection = config.collections[name];
-  if (!collection) {
-    throw new Error(`Unknown collection "${name}".`);
-  }
-  return { name, collection };
 }
 
 function createMaintenanceHtml(): string {
