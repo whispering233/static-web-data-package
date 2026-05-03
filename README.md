@@ -8,9 +8,9 @@
 
 | 包名 | 用途 |
 | --- | --- |
-| `@whispering233/static-web-data` | 核心 schema helper、校验 helper、静态数据包导出器、只读运行时 client。 |
-| `@whispering233/static-web-data-dev` | 本地 CLI、维护端 dev server、JSON/CSV/SQLite 存储适配器。 |
-| `@whispering233/static-web-data-react` | 可选 React hooks、基础组件和 CSS 模板样式。 |
+| `@whispering233/static-web-data` | 核心 schema helper、源数据管理 API、JSON/CSV/SQLite 存储适配器、静态数据包导出器、只读运行时 client。 |
+| `@whispering233/static-web-data-dev` | 本地 CLI、维护端 dev server、内嵌 React 数据管理 UI。 |
+| `@whispering233/static-web-data-react` | 最终静态网站可选使用的 React hooks、组件和 CSS 模板样式。 |
 
 仓库还包含 `npm-test`，这是一个私有 Vite React 测试应用，用于验证打包后的 npm tarball。它不会被包含进任何发布包。
 
@@ -18,7 +18,7 @@
 
 Static Web Data 将数据生命周期分为两个阶段：
 
-- 维护期：开发者通过本地 JSON、CSV 或 SQLite 源存储编辑数据。dev 包会用代码定义的 Zod schema 校验记录，也可以启动本地维护端。
+- 维护期：开发者通过 core 的源数据管理 API 读写本地 JSON、CSV 或 SQLite 源存储，并用代码定义的 Zod schema 校验记录。dev 包围绕这些 core API 提供本地 CLI、dev server 和维护 UI。
 - 运行期：静态网站只读取导出的 JSON 文件。浏览器运行时不会直接读取 CSV 或 SQLite。
 
 schema 的所有权保留在代码中。dev server 不编辑 schema，只读取 Zod schema metadata 来描述字段并校验记录。
@@ -66,6 +66,27 @@ export default defineDataPackage({
 { type: "sqlite", path: "data/site.sqlite", table: "posts" }
 ```
 
+## Core 数据管理 API
+
+维护期源数据读写可以直接通过 core 的统一 storage API 完成：
+
+```ts
+import config from "./swd.config";
+import { createDataRepository } from "@whispering233/static-web-data/storage";
+
+const data = createDataRepository(config, { cwd: process.cwd() });
+
+await data.collection("posts").upsert({
+  id: "welcome",
+  title: "Welcome",
+  published: true
+});
+
+await data.exportStaticBundle();
+```
+
+`@whispering233/static-web-data/storage` 是 Node-only 入口，用于本地维护、CLI、server 和构建脚本。浏览器和 React 静态页面应从 `@whispering233/static-web-data` 根入口导入只读运行时 client。
+
 ## 维护端 CLI
 
 如果在本仓库中直接运行，需要先构建包：
@@ -91,6 +112,8 @@ node packages/dev/dist/cli.js export --cwd npm-test --config swd.config.ts
 ```sh
 node packages/dev/dist/cli.js dev --cwd npm-test --config swd.config.ts --port 4321
 ```
+
+`swd dev` 会启动本地 dev server，并提供内嵌 React 数据管理 UI。UI 通过 dev server 调用 core storage API，不在 dev 包中重新实现源数据读写逻辑。
 
 在安装了 dev 包的消费项目中，可以直接使用包提供的 binary：
 
@@ -236,8 +259,8 @@ https://whispering233.github.io/static-web-data-package/
 
 ```text
 packages/
-  core/    # schema helpers、runtime client、static export
-  dev/     # CLI、dev server、storage adapters
+  core/    # schema helpers、source data management、storage adapters、static export、runtime client
+  dev/     # CLI、dev server、embedded React management UI
   react/   # 可选 React hooks/components/styles
 npm-test/  # 私有 packed-package 测试应用
 scripts/   # 打包和发布辅助脚本

@@ -4,7 +4,7 @@ import {
   type CollectionDefinition,
   describeCollection,
   validateCollectionRecords
-} from "@whispering233/static-web-data/schema";
+} from "../schema.js";
 
 export function resolveStoragePath(cwd: string, storagePath: string): string {
   return resolve(cwd, storagePath);
@@ -49,6 +49,26 @@ export function upsertIntoRecords(
     nextRecords.push(record);
   }
   return { records: nextRecords, record };
+}
+
+export function upsertAllIntoRecords(
+  collectionName: string,
+  collection: CollectionDefinition,
+  records: Record<string, unknown>[],
+  rawRecords: unknown[]
+): Record<string, unknown>[] {
+  const parsedRecords = validateRecords(collectionName, collection, rawRecords);
+  const nextRecords = records.slice();
+  for (const record of parsedRecords) {
+    const key = getPrimaryKeyValue(collectionName, collection, record);
+    const index = nextRecords.findIndex((item) => String(item[collection.primaryKey]) === key);
+    if (index >= 0) {
+      nextRecords[index] = record;
+    } else {
+      nextRecords.push(record);
+    }
+  }
+  return nextRecords;
 }
 
 export function removeFromRecords(
