@@ -4,6 +4,8 @@
 
 这个仓库是一个 pnpm workspace，用于让开发者用代码定义数据 schema，通过本地维护端管理源数据，并为浏览器运行时导出只读静态 JSON 数据包。
 
+page: https://whispering233.github.io/static-web-data-package/
+
 ## 包结构
 
 | 包名 | 用途 |
