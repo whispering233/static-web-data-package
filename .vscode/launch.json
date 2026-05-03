@@ -1,0 +1,146 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Swd CLI: validate npm-test",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/packages/dev/dist/cli.js",
+      "args": [
+        "validate",
+        "--cwd",
+        "${workspaceFolder}/npm-test",
+        "--config",
+        "swd.config.ts"
+      ],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "sourceMaps": true,
+      "smartStep": true,
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
+      "outFiles": [
+        "${workspaceFolder}/packages/*/dist/**/*.js"
+      ]
+    },
+    {
+      "name": "Swd CLI: export npm-test",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/packages/dev/dist/cli.js",
+      "args": [
+        "export",
+        "--cwd",
+        "${workspaceFolder}/npm-test",
+        "--config",
+        "swd.config.ts"
+      ],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "sourceMaps": true,
+      "smartStep": true,
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
+      "outFiles": [
+        "${workspaceFolder}/packages/*/dist/**/*.js"
+      ]
+    },
+    {
+      "name": "Swd Dev Server: npm-test",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/packages/dev/dist/cli.js",
+      "args": [
+        "dev",
+        "--cwd",
+        "${workspaceFolder}/npm-test",
+        "--config",
+        "swd.config.ts",
+        "--port",
+        "4321"
+      ],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "sourceMaps": true,
+      "smartStep": true,
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
+      "outFiles": [
+        "${workspaceFolder}/packages/*/dist/**/*.js"
+      ],
+      "serverReadyAction": {
+        "pattern": "running at (http://localhost:[0-9]+)",
+        "uriFormat": "%s",
+        "action": "openExternally"
+      }
+    },
+    {
+      "name": "Vitest: current test file",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/node_modules/vitest/vitest.mjs",
+      "args": [
+        "run",
+        "${file}",
+        "--pool",
+        "forks",
+        "--poolOptions.forks.singleFork"
+      ],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "autoAttachChildProcesses": true,
+      "sourceMaps": true,
+      "smartStep": true,
+      "skipFiles": [
+        "<node_internals>/**",
+        "${workspaceFolder}/node_modules/**"
+      ]
+    },
+    {
+      "name": "npm-test: Vite dev server",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": [
+        "--dir",
+        "${workspaceFolder}/npm-test",
+        "dev",
+        "--host",
+        "127.0.0.1",
+        "--port",
+        "5173"
+      ],
+      "cwd": "${workspaceFolder}/npm-test",
+      "console": "integratedTerminal",
+      "autoAttachChildProcesses": true,
+      "sourceMaps": true,
+      "smartStep": true,
+      "skipFiles": [
+        "<node_internals>/**",
+        "${workspaceFolder}/node_modules/**"
+      ],
+      "serverReadyAction": {
+        "pattern": "Local:\\s+(http://127\\.0\\.0\\.1:[0-9]+)",
+        "uriFormat": "%s",
+        "action": "debugWithChrome",
+        "webRoot": "${workspaceFolder}/npm-test/src"
+      }
+    },
+    {
+      "name": "Script: pack smoke",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/scripts/pack-smoke.mjs",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "sourceMaps": true,
+      "smartStep": true,
+      "skipFiles": [
+        "<node_internals>/**"
+      ]
+    }
+  ]
+}
